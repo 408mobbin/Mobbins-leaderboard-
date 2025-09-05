@@ -63,8 +63,24 @@ function getUTCMonthDisplay() {
 
 async function fetchAffiliates(start_at: string, end_at: string): Promise<AffiliatesResponse> {
   const base = process.env.RAINBET_API_BASE || "https://services.rainbet.com/v1";
-  const key = process.env.RAINBET_API_KEY || "";
-  const url = `${base}/external/affiliates`;
+  const key  = process.env.RAINBET_API_KEY || "";
+  const url  = `${base}/external/affiliates`;
+
+  // 🔎 Build the *exact* GET URL (with encoded params)
+  const qs = new URLSearchParams({ start_at, end_at, key }).toString();
+  const fullUrl = `${url}?${qs}`;
+
+  // Safe logging: redacted + (optional) full URL
+  if (process.env.NODE_ENV !== "production") {
+    const redacted = fullUrl.replace(/(key=)[^&]+/i, "$1***");
+    console.log("[fetchAffiliates] FULL URL (redacted):", redacted);
+
+    // ⚠️ Uncomment the next line temporarily if you want the copy-pasteable URL with your key:
+    // console.log("[fetchAffiliates] FULL URL (WITH KEY):", fullUrl);
+
+    // Handy cURL too:
+    console.log("[fetchAffiliates] curl:", `curl -sS '${fullUrl}' -H 'Accept: application/json'`);
+  }
 
   const res = await axios.get(url, {
     params: { start_at, end_at, key },
@@ -78,6 +94,7 @@ async function fetchAffiliates(start_at: string, end_at: string): Promise<Affili
 
   return res.data;
 }
+
 
 function parseAmount(x?: string) {
   const n = parseFloat(x || "0");
@@ -155,6 +172,26 @@ function DiscordButton({ className = "" }: { className?: string }) {
     </Link>
   );
 }
+
+function InstagramButton({ className = "" }: { className?: string }) {
+  const href = process.env.INSTAGRAM_URL || "#";
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${BTN_BASE} text-white ${className} bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 hover:brightness-110`}
+      aria-label="Open Instagram"
+    >
+      {/* Instagram glyph */}
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3a6 6 0 110 12 6 6 0 010-12zm0 2.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zM18 6.5a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z"/>
+      </svg>
+      Instagram
+    </Link>
+  );
+}
+
 
 function Podium({ top }: { top: Affiliate[] }) {
   const [first, second, third] = top;
@@ -348,6 +385,8 @@ export default async function Page() {
             >
               Watch on Kick
             </Link>
+            <InstagramButton />
+
           </div>
         </div>
 
