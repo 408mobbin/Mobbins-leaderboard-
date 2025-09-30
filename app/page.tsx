@@ -272,6 +272,9 @@ function CountdownBadgeUTC({
   endMinuteUTC?: number;
   endSecondUTC?: number;
 }) {
+  endY = 2025
+  endM = 9
+  endD = 29
   const id = "countdown-utc";
   const script = `
     (function(){
